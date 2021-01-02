@@ -2,9 +2,7 @@ use chrono::prelude::*;
 use crossterm::{
     event::{self, DisableMouseCapture, Event as CEvent, KeyCode},
     execute,
-    style::{Print, ResetColor},
     terminal::{disable_raw_mode, enable_raw_mode, LeaveAlternateScreen},
-    ExecutableCommand,
 };
 use rand::{distributions::Alphanumeric, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -216,8 +214,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-fn render(f: tui::layout::Rect) {}
 
 fn render_home<'a>() -> Paragraph<'a> {
     let home = Paragraph::new(vec![
