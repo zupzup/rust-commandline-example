@@ -1,8 +1,7 @@
 use chrono::prelude::*;
 use crossterm::{
-    event::{self, DisableMouseCapture, Event as CEvent, KeyCode},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, LeaveAlternateScreen},
+    event::{self, Event as CEvent, KeyCode},
+    terminal::{disable_raw_mode, enable_raw_mode},
 };
 use rand::{distributions::Alphanumeric, prelude::*};
 use serde::{Deserialize, Serialize};
@@ -99,8 +98,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     pet_list_state.select(Some(0));
 
     loop {
-        terminal.draw(|f| {
-            let size = f.size();
+        terminal.draw(|rect| {
+            let size = rect.size();
             let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .margin(2)
@@ -148,9 +147,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .highlight_style(Style::default().fg(Color::Yellow))
                 .divider(Span::raw("|"));
 
-            f.render_widget(tabs, chunks[0]);
+            rect.render_widget(tabs, chunks[0]);
             match active_menu_item {
-                MenuItem::Home => f.render_widget(render_home(), chunks[1]),
+                MenuItem::Home => rect.render_widget(render_home(), chunks[1]),
                 MenuItem::Pets => {
                     let pets_chunks = Layout::default()
                         .direction(Direction::Horizontal)
@@ -159,22 +158,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         )
                         .split(chunks[1]);
                     let (left, right) = render_pets(&pet_list_state);
-                    f.render_stateful_widget(left, pets_chunks[0], &mut pet_list_state);
-                    f.render_widget(right, pets_chunks[1]);
+                    rect.render_stateful_widget(left, pets_chunks[0], &mut pet_list_state);
+                    rect.render_widget(right, pets_chunks[1]);
                 }
             }
-            f.render_widget(copyright, chunks[2]);
+            rect.render_widget(copyright, chunks[2]);
         })?;
 
         match rx.recv()? {
             Event::Input(event) => match event.code {
                 KeyCode::Char('q') => {
                     disable_raw_mode()?;
-                    execute!(
-                        terminal.backend_mut(),
-                        LeaveAlternateScreen,
-                        DisableMouseCapture
-                    )?;
                     terminal.show_cursor()?;
                     break;
                 }
